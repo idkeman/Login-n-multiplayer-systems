@@ -21,8 +21,17 @@ async function listPublic(){const{data,error}=await db.from(c.publicRoomsTable).
 async function leave(){try{if(s.host){players().forEach(p=>{if(p.id!==s.id)sendTo(p.id,{type:"host-left"})})}else if(s.hostId)sendTo(s.hostId,{type:"leave"});if(s.public){stopHeartbeat();await db.from(c.publicRoomsTable).delete().eq("host_id",s.hostId)}}finally{stopHeartbeat();try{if(s.channel)await db.removeChannel(s.channel)}catch{}s.channel=null;s.connected=false;s.players.clear();emit("disconnected")}}
 const lobbySync=()=>s.host&&broadcast({type:"lobby",settings:s.settings,players:players()});
 const snapshot=()=>({id:s.id,room:s.room,hostId:s.hostId,isHost:s.host,name:s.name,connected:s.connected,publicRoom:s.public,players:players(),settings:{...s.settings},invite:invite()});
-window.LoginMultiplayer={create,cleanName,parseRoom,randomCode};
-return;
+return{
+  client:db,config:c,on,host,join,leave,sendTo,broadcast,lobbySync,listPublic,
+  playerList:players,snapshot,
+  get state(){return snapshot()},
+  get connected(){return s.connected},
+  get isHost(){return s.host},
+  get id(){return s.id},
+  get room(){return s.room},
+  get hostId(){return s.hostId},
+  get invite(){return invite()}
+};
 }
 function api(){return{create,cleanName,parseRoom,randomCode}}
 window.LoginMultiplayer=api();
