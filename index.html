@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login & Multiplayer Systems</title><link rel="stylesheet" href="./auth.css"></head>
+<body><main class="login-demo"><section class="login-card">
+<h1>Login System</h1><p class="login-note">Reusable Supabase email/password authentication.</p>
+<input id="username" maxlength="24" placeholder="Username" autocomplete="username" style="display:none">
+<input id="email" type="email" placeholder="Personal email" autocomplete="email">
+<input id="password" type="password" placeholder="Password" autocomplete="current-password">
+<div id="error" class="login-error"></div><div id="status" class="login-status"></div>
+<button id="submit" class="primary">Log In</button><button id="toggle">Create account</button>
+<button id="forgot">Forgot password?</button><button id="logout" style="display:none">Log out</button>
+</section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./auth.js"></script>
+<script>
+(()=>{let signup=false;const $=id=>document.getElementById(id);
+const error=m=>$("error").textContent=m||"",status=m=>$("status").textContent=m||"";
+function render(){$("username").style.display=signup?"block":"none";$("submit").textContent=signup?"Create account":"Log In";$("toggle").textContent=signup?"Back to login":"Create account"}
+async function submit(){error("");status("");try{if(signup){const r=await LoginSystem.signup($("email").value,$("password").value,$("username").value);status(r.session?"Logged in.":"Account created. Check your email to verify it, then log in.")}else{await LoginSystem.login($("email").value,$("password").value);status("Logged in.")}}catch(e){error(e.message||String(e))}}
+$("submit").onclick=submit;$("toggle").onclick=()=>{signup=!signup;error("");status("");render()};
+$("forgot").onclick=async()=>{error("");try{await LoginSystem.forgotPassword($("email").value);status("Password reset email sent.")}catch(e){error(e.message||String(e))}};
+$("logout").onclick=async()=>{try{await LoginSystem.logout();status("Logged out.")}catch(e){error(e.message||String(e))}};
+$("password").onkeydown=e=>{if(e.key==="Enter")submit()};
+window.addEventListener("login-state",e=>{const{user,profile}=e.detail;if(user){status("Logged in as "+(profile?.username||user.email||"Account"));$("logout").style.display="inline-block"}else $("logout").style.display="none"});
+window.addEventListener("login-banned",e=>error("Account banned: "+e.detail.reason));
+LoginSystem.init().catch(e=>error(e.message||String(e)));render()})();
+</script></body></html>
