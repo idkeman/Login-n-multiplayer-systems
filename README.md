@@ -46,3 +46,27 @@ Available methods:
 The browser uses the Supabase publishable key. No service-role key is included.
 
 The module is designed around the existing profiles table. Admin moderation and direct-chat are intentionally separate from the core login module.
+
+
+## Multiplayer
+
+`multiplayer.js` is the reusable multiplayer layer extracted from the Imposter project. It is independent of game rules and works alongside the existing LoginSystem.
+
+It provides:
+- Supabase Realtime room transport
+- Host/guest room creation and joining
+- Room codes and invite links
+- Player membership and lobby synchronization
+- Directed and room-wide game messages
+- Public-room discovery with heartbeat/expiry
+- Connection timeout and disconnect handling
+- Room cleanup
+
+Example:
+
+    const mp = LoginMultiplayer.create();
+    await mp.host({ name: "Player 1", settings: { maxPlayers: 8 }, publicRoom: true });
+    mp.on("players", players => console.log(players));
+    mp.broadcast({ type: "game-start" });
+
+Game-specific roles, words, hints, votes, timers, scores, and UI are deliberately not part of the multiplayer module.
